@@ -1,0 +1,19 @@
+{
+  "name": "ckdownload",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-packager . ckdownload --win --out ./build --arch=x64 --overwrite --app-version=0.0.1 --electron-version=4.1.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bagpipe": "^0.3.5",
+    "electron": "^4.1.0",
+    "electron-packager": "^13.1.1",
+    "request": "^2.88.0"
+  }
+}

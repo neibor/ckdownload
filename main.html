@@ -1,0 +1,44 @@
+<div>
+    <label>网址:</label>
+    <input id='url'/>
+</div>
+
+<div style="margin-top:10px">
+    <label>起始:</label>
+    <input id='start'/>
+</div>
+<div>
+    <label>结束:</label>
+    <input id='end'/>
+</div>
+<div><div>下载位置:</div><input onclick="select_dir()" id='dest_dir'><button onclick="send()">下载</button></div>
+
+<div>
+    <div>信息:</div>
+    <textarea id="download_info" readonly="readonly" rows=10 cols="40" wrap="off"></textarea>
+</div>
+
+<script>
+    const ipc = require('electron').ipcRenderer;
+    var url = document.getElementById('url');
+    var start = document.getElementById('start');
+    var end = document.getElementById('end');
+    var dest_dir = document.getElementById('dest_dir');
+    var text = document.getElementById('download_info');
+
+    function send() {
+        ipc.send('download', url=url.value, start=start.value, end=end.value, dest_dir.value);
+    }
+
+    function select_dir(){
+        ipc.send('select_dir')
+    }
+
+    ipc.on('selectedItem', function (event, path) {
+        document.getElementById('dest_dir').value = path
+    })
+
+    ipc.on('complete', function(event, src) {
+        text.append(src+"\n");
+    })
+</script>
