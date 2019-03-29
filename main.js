@@ -40,19 +40,21 @@ app.on('window-all-closed', () => {
 })
 
 var downloadVideo = function (src, dest, callback) {
-    request(src).pipe(fs.createWriteStream(dest)).on('close', function () {
-        console.log(src)
+    request({"url":src, "rejectUnauthorized": false}).pipe(fs.createWriteStream(dest)).on('close', function () {
         callback("completed " + src)
     })
 }
 
 let bp = new Bagpipe(11, { refuse: false })
-var donwload = function (url, start, end, dest_dir, suffix = '.ts') {
+var donwload = function (url, start, end, dest_dir, suffix=".ts") {
     var webc = win.webContents
     var len = end.length
     for (var i = parseInt(start); i <= parseInt(end); i++) {
-        src = url + PrefixInteger(i, len) + suffix
-        dest = dest_dir + '/' + PrefixInteger(i, len) + suffix
+        // var src = url + PrefixInteger(i, len) + suffix
+        var src = url + i + suffix
+        var domains = src.split("/")
+        var filename = domains[domains.length - 1]
+        var dest = dest_dir + '/' + filename
         bp.push(downloadVideo, src, dest, function (data) {
             webc.send("complete", data)
         });
