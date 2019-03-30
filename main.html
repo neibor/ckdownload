@@ -27,7 +27,8 @@
     var text = document.getElementById('download_info');
 
     function send() {
-        ipc.send('download', url=url.value, start=start.value, end=end.value, dest_dir.value);
+        
+        ipc.send('download', url.value, start.value, end.value, dest_dir.value);
     }
 
     function select_dir(){
