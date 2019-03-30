@@ -19,12 +19,15 @@ function createWindow() {
 }
 app.on('ready', createWindow)
 
-ipc.on('download', (sys, url, start, end, dest_dir) => {
+ipc.on('download', (sys, url, start, end, dest_dir, aligned) => {
     console.log('Begin download...')
     console.log('prefix: ' + url)
     console.log('start from ' + start)
     console.log('end with '+ end)
-    donwload(url, start, end, dest_dir)
+    if(aligned){
+        console.log('filename aligned')
+    }
+    donwload(url, start, end, dest_dir, aligned)
     // dry_run(url, start, end)
 })
 
@@ -44,12 +47,16 @@ var downloadVideo = function (src, dest, callback) {
 }
 
 let bp = new Bagpipe(11, { refuse: false })
-var donwload = function (url, start, end, dest_dir, suffix=".ts") {
+var donwload = function (url, start, end, dest_dir, aligned, suffix=".ts") {
     var webc = win.webContents
     var len = end.length
     for (var i = parseInt(start); i <= parseInt(end); i++) {
         // var src = url + PrefixInteger(i, len) + suffix
-        var src = url + i + suffix
+        if(aligned){
+            var src = url + PrefixInteger(i, len) + suffix
+        }else{
+            var src = url + i + suffix
+        }
         var domains = src.split("/")
         var filename = domains[domains.length - 1]
         var dest = dest_dir + '/' + filename

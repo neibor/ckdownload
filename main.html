@@ -11,6 +11,7 @@
     <label>结束:</label>
     <input id='end'/>
 </div>
+<div><p><input type="checkbox" checked name="category" value="aligned" onclick="display()"/>保证文件名对齐 </p></div>
 <div><div>下载位置:</div><input onclick="select_dir()" id='dest_dir'><button onclick="send()">下载</button></div>
 
 <div>
@@ -27,8 +28,8 @@
     var text = document.getElementById('download_info');
 
     function send() {
-        
-        ipc.send('download', url.value, start.value, end.value, dest_dir.value);
+        var aligned = document.getElementsByName('category')[0].checked
+        ipc.send('download', url.value, start.value, end.value, dest_dir.value, aligned);
     }
 
     function select_dir(){
