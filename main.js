@@ -77,10 +77,9 @@ function download(m3u_src, dest_dir) {
 let bp = new Bagpipe(11, { refuse: false })
 function downloadAll(list_of_files, prefix, dest_dir) {
     var webc = win.webContents
-    webc.send("totalfiles", 20)
+    webc.send("totalfiles", list_of_files.length)
     dest_dir = dest_dir + "/"
-    // for (var i in list_of_files) {
-    for (var i=0; i < 20; i++){
+    for (var i in list_of_files) {
         src = url.resolve(prefix, list_of_files[i])
         var dest = url.resolve(dest_dir, list_of_files[i])
         bp.push(downloadVideo, src, dest, function (data) {
