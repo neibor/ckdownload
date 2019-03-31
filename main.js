@@ -22,12 +22,13 @@ let win
 
 function createWindow() {
     menu.setApplicationMenu(null)
-    win = new BrowserWindow({ width: 400, height: 600 })
+    win = new BrowserWindow({ width: 400, height: 500 })
     // win.webContents.openDevTools()
     win.loadFile('main.html')
     win.on('closed', () => {
         win = null
     })
+    console.log("")
 
 }
 app.on('ready', createWindow)
@@ -35,7 +36,7 @@ app.on('ready', createWindow)
 ipc.on('download', (sys, m3u_src, dest_dir) => {
     console.log('Begin download...')
     console.log('m3u8 src ' + m3u_src)
-    donwload(m3u_src, dest_dir)
+    download(m3u_src, dest_dir)
     // dry_run(url, start, end)
 })
 
@@ -65,10 +66,10 @@ var parseM3u = function(data) {
     return rtn
 }
 
-var download = function(m3u_src, dest_dir) {
+function download(m3u_src, dest_dir) {
     var prefix = url.resolve(m3u_src,".")
     request({ "url": m3u_src, "rejectUnauthorized": false }, (err, data) => {
-        var list_of_files = parseM3u(data)
+        var list_of_files = parseM3u(data.body)
         downloadAll(list_of_files, prefix, dest_dir)
     })
 }
@@ -76,9 +77,10 @@ var download = function(m3u_src, dest_dir) {
 let bp = new Bagpipe(11, { refuse: false })
 function downloadAll(list_of_files, prefix, dest_dir) {
     var webc = win.webContents
-    webc.send("totalfiles", list_of_files.length)
+    webc.send("totalfiles", 20)
     dest_dir = dest_dir + "/"
-    for (var i in list_of_files) {
+    // for (var i in list_of_files) {
+    for (var i=0; i < 20; i++){
         src = url.resolve(prefix, list_of_files[i])
         var dest = url.resolve(dest_dir, list_of_files[i])
         bp.push(downloadVideo, src, dest, function (data) {
@@ -87,10 +89,16 @@ function downloadAll(list_of_files, prefix, dest_dir) {
         });
     }
 }
+function sleep(ms) {
+    return new Promise(resolve => 
+        setTimeout(resolve, ms)
+    )
+  }
 
 function print(src, dest, callback) {
-    // console.log(src, dest)
-    callback(src)
+    sleep(Math.floor(Math.random()*1000)+1).then(() => {
+        callback(src)
+    })
 }
 
 ipc.on('select_dir', function (event) {

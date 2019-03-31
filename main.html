@@ -6,7 +6,7 @@
 <div><div>下载位置:</div><input onclick="select_dir()" id='dest_dir'><button onclick="send()">下载</button></div>
 <label id="crt_status">&nbsp;</label>
 <div>
-    <div>信息:</div>
+    <div>详细内容:</div>
     <textarea id="download_info" readonly="readonly" rows=10 cols="40" wrap="off"></textarea>
 </div>
 
@@ -19,6 +19,7 @@
     let crtfiles=0
 
     function send() {
+        text.innerHTML=""
         ipc.send('download', url.value, dest_dir.value);
     }
 
@@ -34,17 +35,18 @@
         text.append(src+"\n");
     })
 
-    ipc.on('totalfiles', function(len) {
+
+    ipc.on('totalfiles', function(e, len) {
         totalfiles = len
         crtfiles = 0
     })
 
-    ipc.on('statplus', function() {
+    ipc.on('statplus', function(e) {
         crtfiles += 1
         stat_str = "已下载" + crtfiles + "/" + totalfiles + "个文件"
-        document.getElementById("crt_status").value=stat_str
+        document.getElementById("crt_status").innerHTML=stat_str
         if (crtfiles === totalfiles) {
-            document.getElementById("crt_status").value="下载完成!"
+            document.getElementById("crt_status").innerHTML="下载完成!"
         }
     })
 </script>
