@@ -68,8 +68,9 @@ var parseM3u = function(data) {
 
 function download(m3u_src, dest_dir) {
     var prefix = url.resolve(m3u_src,".")
-    request({ "url": m3u_src, "rejectUnauthorized": false }, (err, data) => {
-        var list_of_files = parseM3u(data.body)
+    request({ "url": m3u_src, "rejectUnauthorized": false }, (err, res, body) => {
+        //console.log(body)
+        var list_of_files = parseM3u(body)
         downloadAll(list_of_files, prefix, dest_dir)
     })
 }
