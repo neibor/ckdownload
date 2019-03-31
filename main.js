@@ -4,6 +4,19 @@ const Bagpipe = require('bagpipe')
 const { app, BrowserWindow, dialog } = require('electron')
 const ipc = require('electron').ipcMain
 const menu = require('electron').Menu
+const url = require('url')
+
+if (typeof String.prototype.startsWith != 'function') {
+    String.prototype.startsWith = function (prefix) {
+        return this.slice(0, prefix.length) === prefix;
+    };
+}
+
+if (typeof String.prototype.endsWith != 'function') {
+    String.prototype.endsWith = function (suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
 
 let win
 
@@ -19,15 +32,10 @@ function createWindow() {
 }
 app.on('ready', createWindow)
 
-ipc.on('download', (sys, url, start, end, dest_dir, aligned) => {
+ipc.on('download', (sys, m3u_src, dest_dir) => {
     console.log('Begin download...')
-    console.log('prefix: ' + url)
-    console.log('start from ' + start)
-    console.log('end with '+ end)
-    if(aligned){
-        console.log('filename aligned')
-    }
-    donwload(url, start, end, dest_dir, aligned)
+    console.log('m3u8 src ' + m3u_src)
+    donwload(m3u_src, dest_dir)
     // dry_run(url, start, end)
 })
 
@@ -46,22 +54,36 @@ var downloadVideo = function (src, dest, callback) {
     })
 }
 
-let bp = new Bagpipe(11, { refuse: false })
-var donwload = function (url, start, end, dest_dir, aligned, suffix=".ts") {
-    var webc = win.webContents
-    var len = end.length
-    for (var i = parseInt(start); i <= parseInt(end); i++) {
-        // var src = url + PrefixInteger(i, len) + suffix
-        if(aligned){
-            var src = url + PrefixInteger(i, len) + suffix
-        }else{
-            var src = url + i + suffix
+var parseM3u = function(data) {
+    var rtn = []
+    var lines = data.split('\n')
+    for (i in lines) {
+        if (lines[i].endsWith('.ts')) {
+            rtn.push(lines[i])
         }
-        var domains = src.split("/")
-        var filename = domains[domains.length - 1]
-        var dest = dest_dir + '/' + filename
+    }
+    return rtn
+}
+
+var download = function(m3u_src, dest_dir) {
+    var prefix = url.resolve(m3u_src,".")
+    request({ "url": m3u_src, "rejectUnauthorized": false }, (err, data) => {
+        var list_of_files = parseM3u(data)
+        downloadAll(list_of_files, prefix, dest_dir)
+    })
+}
+
+let bp = new Bagpipe(11, { refuse: false })
+function downloadAll(list_of_files, prefix, dest_dir) {
+    var webc = win.webContents
+    webc.send("totalfiles", list_of_files.length)
+    dest_dir = dest_dir + "/"
+    for (var i in list_of_files) {
+        src = url.resolve(prefix, list_of_files[i])
+        var dest = url.resolve(dest_dir, list_of_files[i])
         bp.push(downloadVideo, src, dest, function (data) {
             webc.send("complete", data)
+            webc.send("statplus")
         });
     }
 }
@@ -69,10 +91,6 @@ var donwload = function (url, start, end, dest_dir, aligned, suffix=".ts") {
 function print(src, dest, callback) {
     // console.log(src, dest)
     callback(src)
-}
-
-function PrefixInteger(num, n) {
-    return (Array(n).join(0) + num).slice(-n);
 }
 
 ipc.on('select_dir', function (event) {

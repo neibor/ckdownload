@@ -1,19 +1,10 @@
 <div>
-    <label>网址:</label>
+    <label>m3u8地址:</label>
     <input id='url'/>
 </div>
 
-<div style="margin-top:10px">
-    <label>起始:</label>
-    <input id='start'/>
-</div>
-<div>
-    <label>结束:</label>
-    <input id='end'/>
-</div>
-<div><p><input type="checkbox" checked name="category" value="aligned" onclick="display()"/>保证文件名对齐 </p></div>
 <div><div>下载位置:</div><input onclick="select_dir()" id='dest_dir'><button onclick="send()">下载</button></div>
-
+<label id="crt_status">&nbsp;</label>
 <div>
     <div>信息:</div>
     <textarea id="download_info" readonly="readonly" rows=10 cols="40" wrap="off"></textarea>
@@ -22,14 +13,13 @@
 <script>
     const ipc = require('electron').ipcRenderer;
     var url = document.getElementById('url');
-    var start = document.getElementById('start');
-    var end = document.getElementById('end');
     var dest_dir = document.getElementById('dest_dir');
     var text = document.getElementById('download_info');
+    let totalfiles=0
+    let crtfiles=0
 
     function send() {
-        var aligned = document.getElementsByName('category')[0].checked
-        ipc.send('download', url.value, start.value, end.value, dest_dir.value, aligned);
+        ipc.send('download', url.value, dest_dir.value);
     }
 
     function select_dir(){
@@ -42,5 +32,19 @@
 
     ipc.on('complete', function(event, src) {
         text.append(src+"\n");
+    })
+
+    ipc.on('totalfiles', function(len) {
+        totalfiles = len
+        crtfiles = 0
+    })
+
+    ipc.on('statplus', function() {
+        crtfiles += 1
+        stat_str = "已下载" + crtfiles + "/" + totalfiles + "个文件"
+        document.getElementById("crt_status").value=stat_str
+        if (crtfiles === totalfiles) {
+            document.getElementById("crt_status").value="下载完成!"
+        }
     })
 </script>
